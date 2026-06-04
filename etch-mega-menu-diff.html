@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Etch Mega Menu – CSS Class Version Compare</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#161d2e; --panel2:#1c2540; --line:#2a3553;
+    --txt:#e6ebf5; --muted:#8a97b5; --accent:#5b8cff; --accent2:#3a6df0;
+    --add:#1f7a4d; --add-bg:rgba(46,200,120,.16); --add-line:#2ec878;
+    --del:#a33; --del-bg:rgba(255,90,90,.15); --del-line:#ff6b6b;
+    --chg-bg:rgba(255,196,0,.14); --chg-line:#ffc400;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--txt); font-size:14px; line-height:1.45;
+    display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  header.app{
+    padding:14px 20px; border-bottom:1px solid var(--line); background:var(--panel);
+    display:flex; align-items:center; gap:16px; flex-shrink:0;
+  }
+  header.app h1{font-size:16px; margin:0; font-weight:650; letter-spacing:.2px;}
+  header.app .sub{color:var(--muted); font-size:12.5px;}
+  .drops{display:flex; gap:14px; padding:14px 20px; flex-shrink:0;}
+  .drop{
+    flex:1; border:1.5px dashed var(--line); border-radius:var(--radius);
+    padding:14px 16px; background:var(--panel); cursor:pointer; transition:.15s;
+    position:relative; min-height:74px; display:flex; flex-direction:column; justify-content:center;
+  }
+  .drop.new{border-color:#2f4a8a;}
+  .drop.site{border-color:#2f6a4a;}
+  .drop:hover{background:var(--panel2);}
+  .drop.dragover{background:var(--panel2); border-style:solid;}
+  .drop .label{font-weight:650; font-size:13px; display:flex; align-items:center; gap:8px;}
+  .drop.new .dot{color:var(--accent);}
+  .drop.site .dot{color:var(--add-line);}
+  .drop .hint{color:var(--muted); font-size:12px; margin-top:4px;}
+  .drop .file{font-size:12.5px; margin-top:6px; color:var(--txt); word-break:break-all;}
+  .drop .file.ok::before{content:"✓ "; color:var(--add-line);}
+  .drop input[type=file]{display:none;}
+  .toolbar{
+    display:flex; align-items:center; gap:14px; padding:0 20px 12px; flex-shrink:0; flex-wrap:wrap;
+  }
+  .summary{display:flex; gap:8px; flex-wrap:wrap;}
+  .stat{font-size:12px; padding:4px 10px; border-radius:20px; background:var(--panel2); border:1px solid var(--line);}
+  .stat b{font-weight:700;}
+  .stat.changed{color:var(--chg-line);}
+  .stat.added{color:var(--add-line);}
+  .stat.removed{color:var(--del-line);}
+  .grow{flex:1;}
+  .opt{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer; user-select:none;}
+  .main{display:flex; flex:1; min-height:0; border-top:1px solid var(--line);}
+  .sidebar{
+    width:320px; flex-shrink:0; border-right:1px solid var(--line); background:var(--panel);
+    display:flex; flex-direction:column; min-height:0;
+  }
+  .search{padding:10px;}
+  .search input{
+    width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--bg); color:var(--txt); font-size:13px;
+  }
+  .filterbar{display:flex; gap:4px; padding:0 10px 8px; flex-wrap:wrap;}
+  .fbtn{font-size:11.5px; padding:3px 9px; border-radius:14px; border:1px solid var(--line); background:var(--bg); color:var(--muted); cursor:pointer;}
+  .fbtn.active{background:var(--accent2); color:#fff; border-color:var(--accent2);}
+  .list{overflow-y:auto; flex:1; min-height:0;}
+  .item{padding:9px 12px; border-bottom:1px solid var(--line); cursor:pointer; display:flex; align-items:center; gap:8px;}
+  .item:hover{background:var(--panel2);}
+  .item.active{background:var(--accent2);}
+  .item.active .sel, .item.active .meta{color:#fff;}
+  .item .sel{font-family:"SF Mono",Menlo,Consolas,monospace; font-size:12px; flex:1; word-break:break-all;}
+  .item .meta{font-size:10.5px; color:var(--muted);}
+  .badge{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .badge.changed{background:var(--chg-line);}
+  .badge.added{background:var(--add-line);}
+  .badge.removed{background:var(--del-line);}
+  .badge.same{background:#46527a;}
+  .content{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;}
+  .chead{
+    padding:12px 18px; border-bottom:1px solid var(--line); background:var(--panel);
+    display:flex; align-items:center; gap:12px; flex-shrink:0;
+  }
+  .chead .selname{font-family:"SF Mono",Menlo,Consolas,monospace; font-size:14px; font-weight:600;}
+  .chead .tag{font-size:11px; padding:2px 8px; border-radius:6px; background:var(--panel2); color:var(--muted); border:1px solid var(--line);}
+  .btn{font-size:12px; padding:6px 12px; border-radius:7px; border:1px solid var(--accent2); background:var(--accent2); color:#fff; cursor:pointer;}
+  .btn.ghost{background:transparent; color:var(--accent); }
+  .btn:active{transform:translateY(1px);}
+  .panes{display:flex; flex:1; min-height:0; overflow:auto;}
+  .pane{flex:1; min-width:0; border-right:1px solid var(--line);}
+  .pane:last-child{border-right:none;}
+  .pane h3{
+    margin:0; padding:8px 14px; font-size:12px; font-weight:650; position:sticky; top:0;
+    background:var(--panel); border-bottom:1px solid var(--line); z-index:1;
+  }
+  .pane.left h3{color:var(--add-line);}
+  .pane.right h3{color:var(--accent);}
+  .code{font-family:"SF Mono",Menlo,Consolas,monospace; font-size:12.5px; line-height:1.55;}
+  .row{display:flex; white-space:pre-wrap; word-break:break-word; padding:0 6px 0 0;}
+  .row .ln{width:42px; flex-shrink:0; text-align:right; padding-right:10px; color:#54608a; user-select:none; background:rgba(255,255,255,.02);}
+  .row .tx{flex:1; padding-left:10px;}
+  .row.add{background:var(--add-bg);} .row.add .tx{box-shadow:inset 3px 0 var(--add-line);}
+  .row.del{background:var(--del-bg);} .row.del .tx{box-shadow:inset 3px 0 var(--del-line);}
+  .row.chg{background:var(--chg-bg);} .row.chg .tx{box-shadow:inset 3px 0 var(--chg-line);}
+  .row.empty{background:repeating-linear-gradient(45deg,transparent,transparent 6px,rgba(255,255,255,.02) 6px,rgba(255,255,255,.02) 12px);}
+  .row .tx .w{background:rgba(255,196,0,.32); border-radius:2px;}
+  .placeholder{flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); text-align:center; padding:40px; flex-direction:column; gap:10px;}
+  .placeholder .big{font-size:15px; color:var(--txt);}
+  .legend{display:flex; gap:14px; font-size:11.5px; color:var(--muted); padding:6px 18px; border-top:1px solid var(--line); background:var(--panel); flex-shrink:0;}
+  .legend span{display:flex; align-items:center; gap:5px;}
+  .legend i{width:12px; height:12px; border-radius:3px; display:inline-block;}
+  .legend i.add{background:var(--add-line);} .legend i.del{background:var(--del-line);} .legend i.chg{background:var(--chg-line);}
+  .err{color:var(--del-line); font-size:12px; padding:4px 0;}
+</style>
+</head>
+<body>
+<header class="app">
+  <h1>Etch Mega Menu – CSS Class Version Compare</h1>
+  <span class="sub">Compares the <code>styles</code> from two Etch JSON exports, selector by selector. Nothing is changed or uploaded – everything runs locally in your browser.</span>
+</header>
+
+<div class="drops">
+  <label class="drop new" id="dropNew">
+    <span class="label"><span class="dot">●</span> New version (original)</span>
+    <span class="hint">Drag the JSON from the new release here, or click to browse</span>
+    <span class="file" id="fileNew"></span>
+    <input type="file" accept=".json,application/json" id="inputNew">
+  </label>
+  <label class="drop site" id="dropSite">
+    <span class="label"><span class="dot">●</span> Website (to review)</span>
+    <span class="hint">Drag the JSON from the site you want to check here, or click to browse</span>
+    <span class="file" id="fileSite"></span>
+    <input type="file" accept=".json,application/json" id="inputSite">
+  </label>
+</div>
+
+<div class="toolbar">
+  <div class="summary" id="summary"></div>
+  <span class="grow"></span>
+  <label class="opt"><input type="checkbox" id="onlyChanged"> Differences only in list</label>
+  <label class="opt"><input type="checkbox" id="ignoreWs" checked> Ignore indentation / blank lines</label>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="search"><input type="text" id="search" placeholder="Search selector … (e.g. dwc-header-vars)"></div>
+    <div class="filterbar" id="filterbar">
+      <button class="fbtn active" data-f="all">All</button>
+      <button class="fbtn" data-f="changed">Changed</button>
+      <button class="fbtn" data-f="added">New only</button>
+      <button class="fbtn" data-f="removed">Website only</button>
+      <button class="fbtn" data-f="same">Identical</button>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+
+  <div class="content" id="content">
+    <div class="placeholder" id="placeholder">
+      <span class="big">Load both JSON files</span>
+      <span>On the left the <b>new version</b>, on the right the one <b>currently live on the website</b>.<br>Then pick a selector on the left – the differences will be highlighted.</span>
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <span><i class="add"></i> only in new version (added)</span>
+  <span><i class="del"></i> only on website (removed / your customisation)</span>
+  <span><i class="chg"></i> changed value</span>
+</div>
+
+<script>
+"use strict";
+
+const state = { newData:null, siteData:null, filter:"all", search:"", selected:null, compare:[] };
+
+/* ---------- JSON → selector map ---------- */
+function parseStyles(json, fname){
+  let data;
+  try { data = JSON.parse(json); }
+  catch(e){ throw new Error("File is not valid JSON ("+fname+")."); }
+  const styles = data && data.styles;
+  if(!styles || typeof styles !== "object")
+    throw new Error("No \"styles\" block found in "+fname+". Is this an Etch export?");
+  const map = new Map();
+  for(const key of Object.keys(styles)){
+    const s = styles[key];
+    if(!s || !s.selector) continue;
+    // merge duplicate selectors
+    if(map.has(s.selector)){
+      const ex = map.get(s.selector);
+      ex.css = ex.css + "\n" + (s.css||"");
+    } else {
+      map.set(s.selector, { selector:s.selector, type:s.type||"", css:(s.css||"") });
+    }
+  }
+  return { version: (data.version!=null?String(data.version):"?"), map };
+}
+
+/* ---------- Diff (LCS on lines) ---------- */
+function norm(line){
+  return document.getElementById("ignoreWs").checked ? line.trim() : line.replace(/\s+$/,"");
+}
+function splitLines(css){
+  let lines = (css||"").replace(/\r\n/g,"\n").split("\n");
+  return lines;
+}
+function lcsDiff(aLines, bLines){
+  // a = left (website), b = right (new)
+  const ignoreWs = document.getElementById("ignoreWs").checked;
+  const a = aLines.map(norm), b = bLines.map(norm);
+  // optionally ignore blank lines
+  const aIdx=[], bIdx=[];
+  for(let i=0;i<a.length;i++){ if(!(ignoreWs && a[i]==="")) aIdx.push(i); }
+  for(let j=0;j<b.length;j++){ if(!(ignoreWs && b[j]==="")) bIdx.push(j); }
+  const A=aIdx.map(i=>a[i]), B=bIdx.map(j=>b[j]);
+  const n=A.length, m=B.length;
+  const dp=Array.from({length:n+1},()=>new Int32Array(m+1));
+  for(let i=n-1;i>=0;i--) for(let j=m-1;j>=0;j--)
+    dp[i][j] = (A[i]===B[j]) ? dp[i+1][j+1]+1 : Math.max(dp[i+1][j],dp[i][j+1]);
+  // walk
+  const ops=[]; let i=0,j=0;
+  while(i<n && j<m){
+    if(A[i]===B[j]){ ops.push({t:"eq",ai:aIdx[i],bi:bIdx[j]}); i++;j++; }
+    else if(dp[i+1][j]>=dp[i][j+1]){ ops.push({t:"del",ai:aIdx[i]}); i++; }
+    else { ops.push({t:"ins",bi:bIdx[j]}); j++; }
+  }
+  while(i<n){ ops.push({t:"del",ai:aIdx[i]}); i++; }
+  while(j<m){ ops.push({t:"ins",bi:bIdx[j]}); j++; }
+  return ops;
+}
+
+/* pair dels with ins into "changed" rows for side-by-side */
+function buildRows(aLines, bLines, ops){
+  const rows=[]; // {left:{ln,txt} or null, right:..., kind:'eq'|'add'|'del'|'chg'}
+  let k=0;
+  while(k<ops.length){
+    const op=ops[k];
+    if(op.t==="eq"){
+      rows.push({kind:"eq", left:{ln:op.ai+1,txt:aLines[op.ai]}, right:{ln:op.bi+1,txt:bLines[op.bi]}});
+      k++;
+    } else {
+      // collect a block of consecutive del/ins
+      const dels=[], ins=[];
+      while(k<ops.length && ops[k].t!=="eq"){
+        if(ops[k].t==="del") dels.push(ops[k].ai); else ins.push(ops[k].bi);
+        k++;
+      }
+      const max=Math.max(dels.length, ins.length);
+      for(let x=0;x<max;x++){
+        const d = x<dels.length ? dels[x] : null;
+        const ipos = x<ins.length ? ins[x] : null;
+        if(d!=null && ipos!=null)
+          rows.push({kind:"chg", left:{ln:d+1,txt:aLines[d]}, right:{ln:ipos+1,txt:bLines[ipos]}});
+        else if(d!=null)
+          rows.push({kind:"del", left:{ln:d+1,txt:aLines[d]}, right:null});
+        else
+          rows.push({kind:"add", left:null, right:{ln:ipos+1,txt:bLines[ipos]}});
+      }
+    }
+  }
+  return rows;
+}
+
+/* word-level highlight inside changed lines */
+function escapeHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function highlightWords(leftTxt, rightTxt){
+  const lw=leftTxt.split(/(\s+)/), rw=rightTxt.split(/(\s+)/);
+  // simple LCS on tokens
+  const n=lw.length,m=rw.length;
+  const dp=Array.from({length:n+1},()=>new Int32Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)
+    dp[i][j]=lw[i]===rw[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);
+  let i=0,j=0; let L="",R="";
+  while(i<n&&j<m){
+    if(lw[i]===rw[j]){L+=escapeHtml(lw[i]);R+=escapeHtml(rw[j]);i++;j++;}
+    else if(dp[i+1][j]>=dp[i][j+1]){L+='<span class="w">'+escapeHtml(lw[i])+'</span>';i++;}
+    else {R+='<span class="w">'+escapeHtml(rw[j])+'</span>';j++;}
+  }
+  while(i<n){L+='<span class="w">'+escapeHtml(lw[i])+'</span>';i++;}
+  while(j<m){R+='<span class="w">'+escapeHtml(rw[j])+'</span>';j++;}
+  return [L,R];
+}
+
+/* ---------- status per selector ---------- */
+function computeCompare(){
+  state.compare=[];
+  if(!state.newData || !state.siteData){ render(); return; }
+  const nm=state.newData.map, sm=state.siteData.map;
+  const all=new Set([...nm.keys(), ...sm.keys()]);
+  for(const sel of all){
+    const n=nm.get(sel), s=sm.get(sel);
+    let status;
+    if(n && !s) status="added";          // only in new version
+    else if(!n && s) status="removed";    // only on website
+    else status = (norm2(n.css)===norm2(s.css)) ? "same" : "changed";
+    state.compare.push({selector:sel, status, type:(n&&n.type)||(s&&s.type)||""});
+  }
+  // sort: changed, added, removed, same – then alphabetical
+  const order={changed:0,added:1,removed:2,same:3};
+  state.compare.sort((a,b)=> (order[a.status]-order[b.status]) || a.selector.localeCompare(b.selector));
+  render();
+}
+function norm2(css){
+  // coarse comparison for the status flag (respects ignoreWs)
+  const ig=document.getElementById("ignoreWs").checked;
+  let lines=splitLines(css).map(l=>ig?l.trim():l.replace(/\s+$/,""));
+  if(ig) lines=lines.filter(l=>l!=="");
+  return lines.join("\n");
+}
+
+/* ---------- render ---------- */
+function render(){
+  renderSummary(); renderList(); renderContent();
+}
+function renderSummary(){
+  const el=document.getElementById("summary");
+  if(!state.newData || !state.siteData){ el.innerHTML=""; return; }
+  const c={changed:0,added:0,removed:0,same:0};
+  state.compare.forEach(x=>c[x.status]++);
+  el.innerHTML =
+    `<span class="stat">New: v${state.newData.version}, ${state.newData.map.size} selectors</span>`+
+    `<span class="stat">Website: v${state.siteData.version}, ${state.siteData.map.size} selectors</span>`+
+    `<span class="stat changed"><b>${c.changed}</b> changed</span>`+
+    `<span class="stat added"><b>${c.added}</b> new only</span>`+
+    `<span class="stat removed"><b>${c.removed}</b> website only</span>`+
+    `<span class="stat"><b>${c.same}</b> identical</span>`;
+}
+function renderList(){
+  const list=document.getElementById("list");
+  const onlyChanged=document.getElementById("onlyChanged").checked;
+  const q=state.search.toLowerCase();
+  let items=state.compare.filter(x=>{
+    if(state.filter!=="all" && x.status!==state.filter) return false;
+    if(onlyChanged && x.status==="same") return false;
+    if(q && !x.selector.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  list.innerHTML="";
+  if(items.length===0){ list.innerHTML='<div class="placeholder" style="padding:24px;font-size:12px;">No matches.</div>'; return; }
+  const labels={changed:"changed",added:"new only",removed:"website only",same:"identical"};
+  for(const it of items){
+    const d=document.createElement("div");
+    d.className="item"+(state.selected===it.selector?" active":"");
+    d.innerHTML=`<span class="badge ${it.status}"></span><span class="sel">${escapeHtml(it.selector)}</span><span class="meta">${labels[it.status]}</span>`;
+    d.onclick=()=>{ state.selected=it.selector; render(); };
+    list.appendChild(d);
+  }
+}
+function renderContent(){
+  const content=document.getElementById("content");
+  if(!state.newData || !state.siteData){
+    content.innerHTML='<div class="placeholder" id="placeholder"><span class="big">Load both JSON files</span><span>On the left the <b>new version</b>, on the right the one <b>currently live on the website</b>.<br>Then pick a selector on the left – the differences will be highlighted.</span></div>';
+    return;
+  }
+  if(!state.selected){
+    content.innerHTML='<div class="placeholder"><span class="big">Select a selector on the left</span><span>Pick a CSS class from the list to see the comparison.</span></div>';
+    return;
+  }
+  const sel=state.selected;
+  const n=state.newData.map.get(sel), s=state.siteData.map.get(sel);
+  const newCss = n? n.css : "";
+  const siteCss = s? s.css : "";
+  const aLines=splitLines(siteCss), bLines=splitLines(newCss);
+  const ops=lcsDiff(aLines,bLines);
+  const rows=buildRows(aLines,bLines,ops);
+
+  const tag = n? n.type : (s?s.type:"");
+  let statusNote="";
+  if(n && !s) statusNote=`<span class="tag" style="color:var(--add-line)">only in new version</span>`;
+  else if(!n && s) statusNote=`<span class="tag" style="color:var(--del-line)">only on website (does not exist in the new release)</span>`;
+
+  let leftHtml="", rightHtml="";
+  for(const r of rows){
+    let lcls="row", rcls="row", lt="", rt="";
+    if(r.kind==="eq"){ lt=escapeHtml(r.left.txt); rt=escapeHtml(r.right.txt); }
+    else if(r.kind==="chg"){ lcls+=" chg"; rcls+=" chg"; const[L,R]=highlightWords(r.left.txt,r.right.txt); lt=L; rt=R; }
+    else if(r.kind==="del"){ lcls+=" del"; rcls+=" empty"; lt=escapeHtml(r.left.txt); }
+    else if(r.kind==="add"){ lcls+=" empty"; rcls+=" add"; rt=escapeHtml(r.right.txt); }
+    const lln = r.left? r.left.ln : "";
+    const rln = r.right? r.right.ln : "";
+    leftHtml  += `<div class="${lcls}"><span class="ln">${lln}</span><span class="tx">${lt}</span></div>`;
+    rightHtml += `<div class="${rcls}"><span class="ln">${rln}</span><span class="tx">${rt}</span></div>`;
+  }
+  if(rows.length===0){ leftHtml=rightHtml='<div class="row"><span class="ln"></span><span class="tx" style="color:var(--muted)">(empty)</span></div>'; }
+
+  content.innerHTML = `
+    <div class="chead">
+      <span class="selname">${escapeHtml(sel)}</span>
+      ${tag?`<span class="tag">${escapeHtml(tag)}</span>`:""}
+      ${statusNote}
+      <span class="grow" style="flex:1"></span>
+      <button class="btn" id="copyNew">Copy CSS from new version</button>
+    </div>
+    <div class="panes">
+      <div class="pane left"><h3>Website (current) — v${state.siteData.version}</h3><div class="code">${leftHtml}</div></div>
+      <div class="pane right"><h3>New version — v${state.newData.version}</h3><div class="code">${rightHtml}</div></div>
+    </div>`;
+  const cp=document.getElementById("copyNew");
+  if(cp) cp.onclick=()=>{ navigator.clipboard.writeText(newCss).then(()=>{cp.textContent="✓ copied";setTimeout(()=>cp.textContent="Copy CSS from new version",1500);}); };
+}
+
+/* ---------- file handling ---------- */
+function loadFile(file, which){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=parseStyles(e.target.result, file.name);
+      if(which==="new"){ state.newData=parsed; setFileLabel("fileNew",file.name,parsed.map.size); }
+      else { state.siteData=parsed; setFileLabel("fileSite",file.name,parsed.map.size); }
+      state.selected=null;
+      computeCompare();
+    }catch(err){
+      const id = which==="new"?"fileNew":"fileSite";
+      document.getElementById(id).innerHTML='<span class="err">'+escapeHtml(err.message)+'</span>';
+    }
+  };
+  reader.readAsText(file);
+}
+function setFileLabel(id,name,count){
+  const el=document.getElementById(id);
+  el.className="file ok"; el.textContent=name+" — "+count+" selectors";
+}
+function wireDrop(dropId,inputId,which){
+  const drop=document.getElementById(dropId), input=document.getElementById(inputId);
+  input.addEventListener("change",e=>{ if(e.target.files[0]) loadFile(e.target.files[0],which); });
+  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("dragover");}));
+  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("dragover");}));
+  drop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) loadFile(f,which); });
+}
+wireDrop("dropNew","inputNew","new");
+wireDrop("dropSite","inputSite","site");
+
+/* ---------- controls ---------- */
+document.getElementById("search").addEventListener("input",e=>{ state.search=e.target.value; renderList(); });
+document.getElementById("onlyChanged").addEventListener("change",renderList);
+document.getElementById("ignoreWs").addEventListener("change",()=>{ computeCompare(); });
+document.querySelectorAll(".fbtn").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".fbtn").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active"); state.filter=b.dataset.f; renderList();
+}));
+</script>
+</body>
+</html>
